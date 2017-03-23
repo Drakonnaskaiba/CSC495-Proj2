@@ -1,11 +1,12 @@
 import java.io.*;
 import java.net.*;
+import java.util.Base64;
  
 class TCPServer
 {
    public static void main(String argv[]) throws Exception
       {
-          RSAKeyManager keyman = new RSAKeyManager(2048);
+          RSAKeyManager keyman = new RSAKeyManager(1024);
           
          String clientSentence;
          String capitalizedSentence;
@@ -13,25 +14,27 @@ class TCPServer
  
          while(true)
          {
+             System.out.println("Waiting on incoming connection:");
             Socket connectionSocket = welcomeSocket.accept();
-             System.out.println("Incoming connection");
+             System.out.println("Incoming connection received");
            // BufferedReader inFromClient =
                //new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
             DataInputStream inFromClient = new DataInputStream(connectionSocket.getInputStream()) ;  
             DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
             
             int msglength = inFromClient.readInt();
-             System.out.println("Got message length");
             byte[] theirKey = new byte[msglength];
-                System.out.println("created byte array   : " + theirKey.length);
+            
             inFromClient.readFully(theirKey, 0, theirKey.length);
             
              System.out.println("Received Client's Key");
             
             keyman.setTheirPublicKey(theirKey);
+             System.out.println("My Key:  " + new String(Base64.getEncoder().encode(keyman.returnMyPublicKey())));
+             System.out.println("Their Key: " + new String(Base64.getEncoder().encode(keyman.returnTheirPublicKey().getEncoded())));
             
             byte[] my_key = keyman.returnMyPublicKey();
-            outToClient.write(my_key.length);
+            outToClient.writeInt(my_key.length);
             outToClient.write(my_key);
             
             int keylength = inFromClient.readInt();
@@ -41,7 +44,7 @@ class TCPServer
             byte[] shared_secret = keyman.decrypte_with_RSA(e_shared_secret);
             
             
-            System.out.println(new String(shared_secret));
+            System.out.println(new String(Base64.getEncoder().encode(shared_secret)));
             
             
             
