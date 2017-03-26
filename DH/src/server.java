@@ -33,7 +33,7 @@ class TCPServer {
             byte[] myKey = keyman2.returnMyPublicKey();
             outToClient.writeUTF(new String(Base64.getEncoder().encode(myKey)));
 
-            // Display shared secrete.
+            // Display shared secret.
             byte[] outputB = keyman2.computeSharedSecret();
             String encoded = new String(Base64.getEncoder().encode(outputB));
             System.out.println("Computed Shared Secret: ");
