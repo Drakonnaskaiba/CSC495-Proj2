@@ -27,15 +27,20 @@ class TCPClient {
         byte[] theirKey = Base64.getDecoder().decode(key);
         keyman1.setTheirPublicKey(theirKey);
         byte[] outputA = keyman1.computeSharedSecret();
-        
-        // Displays the output of the Key Agreement.
-        String encoded = new String(Base64.getEncoder().encode(outputA));
-        System.out.println("Computed Shared Secret: ");
-        System.out.println(encoded);
-        //sentence = inFromUser.readLine();
-        //outToServer.writeBytes(sentence + '\n');
-        //modifiedSentence = inFromServer.readLine();
-        //System.out.println("FROM SERVER: " + modifiedSentence);
+
+        // Use last 8 bytes of shared secret as the DES key.
+        byte[] DESKey = new byte[8];
+        int start = outputA.length - 8;
+            for (int c = start; c < outputA.length;c++){
+                DESKey[c - start] = outputA[c];
+            }
+            
+        // Create new DES enctryption object and use it for the session.
+        DESEncryption encrypter = new DESEncryption(DESKey);
+        sentence = inFromUser.readLine();
+        outToServer.writeUTF(encrypter.encryptDES(sentence));
+        modifiedSentence = encrypter.decryptDES(inFromServer.readUTF());
+        System.out.println("FROM SERVER: " + modifiedSentence);
         clientSocket.close();
     }
 }
