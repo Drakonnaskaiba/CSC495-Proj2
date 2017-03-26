@@ -1,49 +1,42 @@
+
 import java.io.*;
 import java.net.*;
 import java.util.Base64;
- 
-class TCPClient
-{
- public static void main(String argv[]) throws Exception
- {
-  RSAKeyManager keyman = new RSAKeyManager(1024);
-       
-  String sentence;
-  String modifiedSentence;
-  BufferedReader inFromUser = new BufferedReader( new InputStreamReader(System.in));
-  Socket clientSocket = new Socket("localhost", 6789);
-  DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-  DataInputStream inFromServer = new DataInputStream(clientSocket.getInputStream());
-  //BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-     
-  byte[] message = keyman.returnMyPublicKey();
-  
-  outToServer.writeInt(message.length);
-  outToServer.write(message);
-  
-  
-  int msglength = inFromServer.readInt();
-  byte[] theirKey = new byte[msglength];
-  inFromServer.readFully(theirKey, 0, theirKey.length);
-     System.out.println("My Key: " + new String(Base64.getEncoder().encode(keyman.returnMyPublicKey())));
-  keyman.setTheirPublicKey(theirKey);
-     System.out.println("Their Key: " + new String(Base64.getEncoder().encode(keyman.returnTheirPublicKey().getEncoded())));
-  
-     System.out.println("Received Server's Key");
-  
-  byte[] shared_secret = keyman.gen_DES_key();
-  
-  byte[] e_shared_secret = keyman.encrypt_with_RSA(shared_secret);
-  outToServer.writeInt(e_shared_secret.length);
-  outToServer.write(e_shared_secret);
-  
-  System.out.println(new String(Base64.getEncoder().encode(shared_secret)));
-  
-  
-  sentence = inFromUser.readLine();
-  outToServer.writeBytes(sentence + '\n');
-  modifiedSentence = inFromServer.readLine();
-  System.out.println("FROM SERVER: " + modifiedSentence);
-  clientSocket.close();
- }
+
+class TCPClient {
+
+    public static void main(String argv[]) throws Exception {
+        // Declare a key manager and set the RSA parameters.
+        RSAKeyManager keyman = new RSAKeyManager(1024);
+
+        // method fields used to hold strings to be read and written.
+        String sentence;
+        String modifiedSentence;
+
+        // Readers and Writers used to communicate across TCP/IP connection.
+        BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
+        Socket clientSocket = new Socket("localhost", 6789);
+        DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+        DataInputStream inFromServer = new DataInputStream(clientSocket.getInputStream());
+
+        // Key Agreement
+        byte[] message = keyman.returnMyPublicKey();
+        outToServer.writeUTF(new String(Base64.getEncoder().encode(message)));
+        String key = inFromServer.readUTF();
+        byte[] theirKey = Base64.getDecoder().decode(key);
+        keyman.setTheirPublicKey(theirKey);
+
+        // Generate and Encrypt a secret key.
+        byte[] shared_secret = keyman.gen_DES_key();
+        byte[] e_shared_secret = keyman.encrypt_with_RSA(shared_secret);
+        outToServer.writeUTF(new String(Base64.getEncoder().encode(e_shared_secret)));
+
+        System.out.println(new String(Base64.getEncoder().encode(shared_secret)));
+
+        //sentence = inFromUser.readLine();
+        //outToServer.writeBytes(sentence + '\n');
+        //modifiedSentence = inFromServer.readLine();
+        //System.out.println("FROM SERVER: " + modifiedSentence);
+        clientSocket.close();
+    }
 }
