@@ -38,10 +38,13 @@ class TCPServer {
             byte[] shared_secret = keyman.decrypte_with_RSA(e_shared_secret);
             System.out.println(new String(Base64.getEncoder().encode(shared_secret)));
 
-            //clientSentence = inFromClient.readLine();
-            //System.out.println("Received: " + clientSentence);
-            //capitalizedSentence = clientSentence.toUpperCase() + '\n';
-            //outToClient.writeBytes(capitalizedSentence);
+            // Create new DES enctryption object and use it for the session.
+            DESEncryption encrypter = new DESEncryption(shared_secret);
+
+            clientSentence = encrypter.decryptDES(inFromClient.readUTF());
+            System.out.println("Received from Client: " + clientSentence);
+            capitalizedSentence = clientSentence.toUpperCase();
+            outToClient.writeUTF(encrypter.encryptDES(capitalizedSentence));
         }
     }
 }

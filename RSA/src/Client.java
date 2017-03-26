@@ -33,10 +33,13 @@ class TCPClient {
 
         System.out.println(new String(Base64.getEncoder().encode(shared_secret)));
 
-        //sentence = inFromUser.readLine();
-        //outToServer.writeBytes(sentence + '\n');
-        //modifiedSentence = inFromServer.readLine();
-        //System.out.println("FROM SERVER: " + modifiedSentence);
+        // Create new DES enctryption object and use it for the session.
+        DESEncryption encrypter = new DESEncryption(shared_secret);
+
+        sentence = inFromUser.readLine();
+        outToServer.writeUTF(encrypter.encryptDES(sentence));
+        modifiedSentence = encrypter.decryptDES(inFromServer.readUTF());
+        System.out.println("FROM SERVER: " + modifiedSentence);
         clientSocket.close();
     }
 }
