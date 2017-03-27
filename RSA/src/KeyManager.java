@@ -171,11 +171,7 @@ class DESEncryption {
             byte[] plainBytes = plaintext.getBytes();
             byte[] cipherBytes = cipher.doFinal(plainBytes);
             ciphertext = new String(Base64.getEncoder().encode(cipherBytes));
-        } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
-            Logger.getLogger(DESEncryption.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(DESEncryption.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvalidKeySpecException ex) {
+        } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | NoSuchAlgorithmException | InvalidKeySpecException ex) {
             Logger.getLogger(DESEncryption.class.getName()).log(Level.SEVERE, null, ex);
         }
         return ciphertext;
@@ -188,11 +184,7 @@ class DESEncryption {
             byte[] cipherBytes = Base64.getDecoder().decode(ciphertext);  // Encrypted string as Base64 decoder.
             cipher.init(Cipher.DECRYPT_MODE, sf.generateSecret(secretKey));
             plaintext = new String(cipher.doFinal(cipherBytes));  // Decrypt the original message.
-        } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
-            Logger.getLogger(DESEncryption.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(DESEncryption.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvalidKeySpecException ex) {
+        } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | NoSuchAlgorithmException | InvalidKeySpecException ex) {
             Logger.getLogger(DESEncryption.class.getName()).log(Level.SEVERE, null, ex);
         }
         return plaintext;

@@ -38,13 +38,33 @@ class TCPServer {
             byte[] shared_secret = keyman.decrypte_with_RSA(e_shared_secret);
             System.out.println(new String(Base64.getEncoder().encode(shared_secret)));
 
-            // Create new DES enctryption object and use it for the session.
-            DESEncryption encrypter = new DESEncryption(shared_secret);
-
-            clientSentence = encrypter.decryptDES(inFromClient.readUTF());
+            // Continue with RSA encryption/decryption.
+            String sent = inFromClient.readUTF();
+            byte[] mess = Base64.getDecoder().decode(sent);
+            clientSentence = new String(keyman.decrypte_with_RSA(mess));
             System.out.println("Received from Client: " + clientSentence);
-            capitalizedSentence = clientSentence.toUpperCase();
-            outToClient.writeUTF(encrypter.encryptDES(capitalizedSentence));
+            String capSentence = clientSentence.toUpperCase();
+            byte[] backBytes = capSentence.getBytes();
+            outToClient.writeUTF(new String(Base64.getEncoder().encode(keyman.encrypt_with_RSA(backBytes))));
+            
+            String[] encrypted = new String[9914];
+            for (int c=0; c < 9914;c++){
+                encrypted[c] = inFromClient.readUTF();
+            }
+            
+            System.out.println("Start decryption of word list.");
+            String[] decrypted = testRSADecrytion(encrypted, keyman);
+            System.out.println("Decryption finished.");
         }
+    }
+    
+    
+    // separate static class used for speed testing RSA decrytion using the Profiler.
+    public static String[] testRSADecrytion(String[] wordList, RSAKeyManager keyman){
+        String[] decrypted = new String[wordList.length];
+        for (int c = 0;c < wordList.length;c++){
+            decrypted[c] = new String(keyman.decrypte_with_RSA(Base64.getDecoder().decode(wordList[c])));
+        }
+        return decrypted;
     }
 }

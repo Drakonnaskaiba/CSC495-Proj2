@@ -12,6 +12,15 @@ class TCPClient {
         // method fields used to hold strings to be read and written.
         String sentence;
         String modifiedSentence;
+        String[] tenthousandWordList;
+        
+        // read from the word list.
+        File file = new File("10000words.txt");
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        tenthousandWordList = new String[9914];
+        for (int c=0;c < tenthousandWordList.length;c++){
+            tenthousandWordList[c] = reader.readLine();
+        }
 
         // Readers and Writers used to communicate across TCP/IP connection.
         BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
@@ -33,13 +42,29 @@ class TCPClient {
 
         System.out.println(new String(Base64.getEncoder().encode(shared_secret)));
 
-        // Create new DES enctryption object and use it for the session.
-        DESEncryption encrypter = new DESEncryption(shared_secret);
-
+        // Continue with RSA encryption/decryption.
         sentence = inFromUser.readLine();
-        outToServer.writeUTF(encrypter.encryptDES(sentence));
-        modifiedSentence = encrypter.decryptDES(inFromServer.readUTF());
+        outToServer.writeUTF(new String(Base64.getEncoder().encode(keyman.encrypt_with_RSA(sentence.getBytes()))));
+        String sent = inFromServer.readUTF();
+        byte[] mess = Base64.getDecoder().decode(sent);
+        modifiedSentence = new String(keyman.decrypte_with_RSA(mess));
         System.out.println("FROM SERVER: " + modifiedSentence);
+        
+        String[] encrypted = testRSAEncrytion(tenthousandWordList, keyman);
+        for (int c=0;c < 9914;c++){
+            outToServer.writeUTF(encrypted[c]);
+        }
+        
         clientSocket.close();
+    }
+    
+    // separate static class used for speed testing RSA encrytion using the Profiler.
+    public static String[] testRSAEncrytion(String[] wordList, RSAKeyManager keyman){
+        String[] encrypted = new String[wordList.length];
+        for (int c = 0;c < wordList.length;c++){
+            
+            encrypted[c] = new String(Base64.getEncoder().encode(keyman.encrypt_with_RSA(wordList[c].getBytes())));
+        }
+        return encrypted;
     }
 }
