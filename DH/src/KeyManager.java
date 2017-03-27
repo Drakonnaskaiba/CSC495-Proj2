@@ -139,7 +139,6 @@ class DESEncryption {
         try {
             this.secretKey = new SecretKeySpec(this.key, 0, this.key.length, "ENCRYPTION_ALGO");
             cipher = Cipher.getInstance(ENCRYPTION_ALGO);
-            System.out.println("Keysize: " + this.key.length);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException ex) {
             Logger.getLogger(DESEncryption.class.getName()).log(Level.SEVERE, null, ex);
         }

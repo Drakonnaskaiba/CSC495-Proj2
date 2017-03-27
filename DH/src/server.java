@@ -50,6 +50,24 @@ class TCPServer {
             System.out.println("Received from Client: " + clientSentence);
             capitalizedSentence = clientSentence.toUpperCase();
             outToClient.writeUTF(encrypter.encryptDES(capitalizedSentence));
+            
+            String[] encrypted = new String[9914];
+            for (int c=0; c < 9914;c++){
+                encrypted[c] = inFromClient.readUTF();
+            }
+            
+            System.out.println("Start decryption of word list.");
+            String[] decrypted = testDESDecrytion(encrypted, encrypter);
+            System.out.println("Decryption finished.");
         }
+    }
+    
+    // separate static class used for speed testing RSA decrytion using the Profiler.
+    public static String[] testDESDecrytion(String[] wordList, DESEncryption encrypter){
+        String[] decrypted = new String[wordList.length];
+        for (int c = 0;c < wordList.length;c++){
+            decrypted[c] = encrypter.decryptDES(wordList[c]);
+        }
+        return decrypted;
     }
 }
