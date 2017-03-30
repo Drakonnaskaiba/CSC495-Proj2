@@ -1,4 +1,5 @@
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.AlgorithmParameterGenerator;
 import java.security.AlgorithmParameters;
@@ -19,12 +20,14 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyAgreement;
+import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.interfaces.DHPrivateKey;
 import javax.crypto.interfaces.DHPublicKey;
 import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import javax.xml.bind.DatatypeConverter;
 
 public class KeyManager{
     protected KeyPairGenerator kpg;
@@ -34,32 +37,32 @@ public class KeyManager{
     protected int KEYSIZE;
     
     public byte[] returnMyPublicKey(){
-        return keyPair.getPublic().getEncoded();
-        
+        return keyPair.getPublic().getEncoded();     
     }
     public byte[] returnMyPrivateKey(){
-        BigInteger priKeyBI = ((DHPrivateKey) keyPair.getPrivate()).getX();
-        return priKeyBI.toByteArray();
+        return keyPair.getPrivate().getEncoded();
     }
+}
+
+
+class DHKeyManager extends KeyManager {
+    protected DHParameterSpec dhparamSpec;
+    public DHKeyManager(int keysize){
+        super.KEYSIZE = keysize;
+    }
+    
     public void setTheirPublicKey(byte[] theirs){
         try {
             KeyFactory kf = KeyFactory.getInstance("DH");
             X509EncodedKeySpec x509Spec = new X509EncodedKeySpec(theirs);
-            this.theirKey = kf.generatePublic(x509Spec);
+            super.theirKey = kf.generatePublic(x509Spec);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
             Logger.getLogger(KeyManager.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     public PublicKey returnTheirPublicKey(){
-        return this.theirKey;
+        return super.theirKey;
     }
-}
-class DHKeyManager extends KeyManager {
-    private DHParameterSpec dhparamSpec;
-    public DHKeyManager(int keysize){
-        super.KEYSIZE = keysize;
-    }
-    
     public void generateParameters(){
         try {
             
@@ -152,11 +155,7 @@ class DESEncryption {
             byte[] plainBytes = plaintext.getBytes();
             byte[] cipherBytes = cipher.doFinal(plainBytes);
             ciphertext = new String(Base64.getEncoder().encode(cipherBytes));
-        } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
-            Logger.getLogger(DESEncryption.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(DESEncryption.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvalidKeySpecException ex) {
+        } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | NoSuchAlgorithmException | InvalidKeySpecException ex) {
             Logger.getLogger(DESEncryption.class.getName()).log(Level.SEVERE, null, ex);
         }
         return ciphertext;
@@ -169,14 +168,28 @@ class DESEncryption {
             byte[] cipherBytes = Base64.getDecoder().decode(ciphertext);  // Encrypted string as Base64 decoder.
             cipher.init(Cipher.DECRYPT_MODE, sf.generateSecret(secretKey));
             plaintext = new String(cipher.doFinal(cipherBytes));  // Decrypt the original message.
-        } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
-            Logger.getLogger(DESEncryption.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(DESEncryption.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvalidKeySpecException ex) {
+        } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | NoSuchAlgorithmException | InvalidKeySpecException ex) {
             Logger.getLogger(DESEncryption.class.getName()).log(Level.SEVERE, null, ex);
         }
         return plaintext;
     }
+    
+    public static String sha256Encode(String data) {
+        String key = "ourHaShKeY";
+        Mac HMAC;
+        String encoded = null;
+        try {
+
+            HMAC = Mac.getInstance("HmacSHA256");
+            // Come back to this and consider creating the key spec outside of this method.
+            SecretKeySpec secret_key = new SecretKeySpec(key.getBytes("UTF-8"), "HmacSHA256");
+            HMAC.init(secret_key);
+            encoded = DatatypeConverter.printHexBinary(HMAC.doFinal(data.getBytes("UTF-8")));
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException ex) {
+            Logger.getLogger(DESEncryption.class.getName()).log(Level.SEVERE, null, ex);
+        }
+  
+  return encoded;
+}
     
 }
