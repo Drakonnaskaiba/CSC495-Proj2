@@ -43,8 +43,8 @@ class TCPServer {
             byte[] mess = Base64.getDecoder().decode(sent);
             clientSentence = new String(keyman.decrypte_with_RSA(mess));
             System.out.println("Received from Client: " + clientSentence);
-            String capSentence = clientSentence.toUpperCase();
-            byte[] backBytes = capSentence.getBytes();
+            capitalizedSentence = clientSentence.toUpperCase();
+            byte[] backBytes = capitalizedSentence.getBytes();
             outToClient.writeUTF(new String(Base64.getEncoder().encode(keyman.encrypt_with_RSA(backBytes))));
             
             String[] encrypted = new String[9914];
