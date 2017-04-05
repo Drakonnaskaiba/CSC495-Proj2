@@ -174,7 +174,7 @@ class DESEncryption {
         return plaintext;
     }
     
-    public static String sha256Encode(String data) {
+    public String sha256Encode(String data) {
         String key = "ourHaShKeY";
         Mac HMAC;
         String encoded = null;
