@@ -25,7 +25,8 @@ class TCPServer {
             DataInputStream inFromClient = new DataInputStream(connectionSocket.getInputStream());
             DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
 
-            // Perform Key Agreement.
+            // Part 1:  Establish Shared Secret between Server and Client.
+            // Key Agreement
             String key = inFromClient.readUTF();
             byte[] theirKey = Base64.getDecoder().decode(key);
             keyman.setTheirPublicKey(theirKey);
@@ -36,7 +37,9 @@ class TCPServer {
             String secret = inFromClient.readUTF();
             byte[] e_shared_secret = Base64.getDecoder().decode(secret);
             byte[] shared_secret = keyman.decrypte_with_RSA(e_shared_secret);
-            System.out.println(new String(Base64.getEncoder().encode(shared_secret)));
+            // print out the shared secret which should match the printout in the client class.
+            System.out.println("DH shared secret: " + new String(Base64.getEncoder().encode(shared_secret)));
+            
 
             // Continue with RSA encryption/decryption.
             String sent = inFromClient.readUTF();
