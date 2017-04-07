@@ -37,6 +37,10 @@ class TCPClient {
         System.out.println("RSA shared secret: " + new String(Base64.getEncoder().encode(shared_secret)));
 
         
+        // Created a delay in order to test each phase separately
+        System.out.println("Press enter to continue.");
+        String delay = inFromUser.readLine();
+        
         
         // Part 2:  Transmit string "Network Security" using the shared key
         // Continue with RSA encryption/decryption.
@@ -46,6 +50,11 @@ class TCPClient {
         byte[] mess = Base64.getDecoder().decode(sent);
         modifiedSentence = new String(keyman.decrypte_with_RSA(mess));
         System.out.println("FROM SERVER: " + modifiedSentence);
+        
+        
+         // Created a delay in order to test each phase separately
+        System.out.println("Press enter to continue.");
+        delay = inFromUser.readLine();
         
         
         // Part 3:  Compare and contrast the time taken by each protocol of Confidentiality
